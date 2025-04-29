@@ -1,0 +1,88 @@
+{
+  "info": {
+    "name": "Candidate Profiles API",
+    "_postman_id": "your-postman-id-here",
+    "description": "Manage candidates using backend Flask API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔍 Get All Candidates",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/candidates",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "candidates"]
+        }
+      }
+    },
+    {
+      "name": "🔍 Get Candidate by record_id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/candidates/{{record_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "candidates", "{{record_id}}"]
+        }
+      }
+    },
+    {
+      "name": "➕ Create Candidate",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"person_id\": \"test_person_001\",\n  \"name\": \"Test Candidate\",\n  \"country_code\": \"SE\",\n  \"city\": \"Stockholm\",\n  \"url\": \"https://linkedin.com/in/testcandidate\",\n  \"position\": \"Software Developer\",\n  \"about\": \"Passionate about Python backend development.\",\n  \"total_experience_years\": 5,\n  \"experiences\": \"Python, Flask, Django\",\n  \"degrees\": \"BSc Computer Science\",\n  \"certifications\": \"AWS Certified Developer\",\n  \"languages\": \"English, Swedish\",\n  \"courses\": \"Full Stack Development\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/candidates",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "candidates"]
+        }
+      }
+    },
+    {
+      "name": "✏️ Update Candidate by record_id",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Test Candidate\",\n  \"city\": \"Gothenburg\",\n  \"position\": \"Senior Software Engineer\",\n  \"total_experience_years\": 7\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/candidates/{{record_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "candidates", "{{record_id}}"]
+        }
+      }
+    },
+    {
+      "name": "🗑️ Delete Candidate by record_id",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/candidates/{{record_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "candidates", "{{record_id}}"]
+        }
+      }
+    }
+  ]
+}
