@@ -68,7 +68,11 @@ function Candidates() {
 
   const getScoreDetails = (record_id) => {
     if (!Array.isArray(recommendations)) return null;
-    return recommendations.find((r) => r.candidate_id === record_id);
+    return recommendations.find(
+      (r) =>
+        // try both keys
+        r.candidate_id === record_id || r.id === record_id
+    );
   };
 
   const openModal = (candidate) => {
