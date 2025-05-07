@@ -470,46 +470,43 @@ def process_recommendations(job_id, job_description_fallback):
     from matching.evaluation import store_prediction
     session = get_session()
     try:
-        # Fetch job posting from DB
+        # Fetch structured job object from DB
         job = session.query(JobPostingsRaw).filter_by(job_id=job_id).first()
         if not job:
             raise ValueError(f"No job found with id {job_id}")
 
-        # ✅ Combine relevant fields into one consistent job description
-        job_text_parts = [
-            job.title,
-            job.department,
-            job.locations,
-            job.work_type,
-            job.experience_required,
-            str(job.total_experience_years or ""),
-            job.job_description
-        ]
-        combined_job_text = "\n".join([str(p).strip() for p in job_text_parts if p])
-
+        # Build fully-structured payload matching matcher_pipeline expectations
         job_payload = {
             "id": job.job_id,
-            "description": combined_job_text or job_description_fallback
+            "title": job.title or "",
+            "department": job.department or "",
+            "locations": job.locations or "",
+            "work_type": job.work_type or "",
+            "experience_required": job.experience_required or "",
+            "total_experience_years": str(job.total_experience_years or ""),
+            "job_description": job.job_description or job_description_fallback
         }
 
-        # ✅ Get all candidates
-        candidates = session.execute(text("SELECT * FROM candidate_profiles_joined")).mappings().all()
-        candidate_list = [dict(row) for row in candidates]
+        # Load all candidates
+        candidates = session.execute(
+            text("SELECT * FROM candidate_profiles_joined")
+        ).mappings().all()
+        candidate_list = [dict(r) for r in candidates]
 
         print(f"🔧 Processing {len(candidate_list)} candidates for job ID: {job_id}")
         result = recommend_candidates_for_job(job_payload, candidate_list)
 
-        # ✅ Store each prediction in DB
-        for candidate in result["candidates"]:
-            candidate_id = candidate.get("id") or candidate.get("record_id")
+        # Persist predictions
+        for cand in result["candidates"]:
+            cid = cand.get("id") or cand.get("record_id")
             store_prediction(
                 job_id,
-                candidate_id,
+                cid,
                 {
-                    "score": candidate["score"],
-                    "precision": candidate["precision"],
-                    "recall": candidate["recall"],
-                    "f1_score": candidate["f1_score"]
+                    "score":     cand["score"],
+                    "precision": cand["precision"],
+                    "recall":    cand["recall"],
+                    "f1_score":  cand["f1_score"]
                 }
             )
 
@@ -517,6 +514,7 @@ def process_recommendations(job_id, job_description_fallback):
 
     finally:
         session.close()
+
 
 
 
@@ -628,76 +626,76 @@ def recommendation_status(task_id):
 #     finally:
 #         session.close()
 
-def recommend_candidates_for_job(job, candidates):
+# def recommend_candidates_for_job(job, candidates):
     
-    job_text = job.get("description", "")
-    if not job_text.strip():
-        raise ValueError("Job description is missing or empty.")
-    job_id = job.get("id", "unknown")
+#     job_text = job.get("description", "")
+#     if not job_text.strip():
+#         raise ValueError("Job description is missing or empty.")
+#     job_id = job.get("id", "unknown")
 
-    print("\n" + "=" * 40)
-    print(f"🧑💼 JOB DESCRIPTION ANALYSIS for Job ID: {job_id}")
-    match_entities_with_bert(job_text, "")  # For job logging only
+#     print("\n" + "=" * 40)
+#     print(f"🧑💼 JOB DESCRIPTION ANALYSIS for Job ID: {job_id}")
+#     match_entities_with_bert(job_text, "")  # For job logging only
 
-    scored_candidates = []
+#     scored_candidates = []
 
-    for candidate in candidates:
-        candidate_id = candidate.get("record_id") or candidate.get("id", "unknown")
-        candidate_text = candidate.get("about", "")
-        candidate_name = candidate.get("name", "Unnamed")
+#     for candidate in candidates:
+#         candidate_id = candidate.get("record_id") or candidate.get("id", "unknown")
+#         candidate_text = candidate.get("about", "")
+#         candidate_name = candidate.get("name", "Unnamed")
 
-        print("\n" + "=" * 40)
-        print(f"👤 CANDIDATE PROFILE ANALYSIS: {candidate_name} ({candidate_id})")
+#         print("\n" + "=" * 40)
+#         print(f"👤 CANDIDATE PROFILE ANALYSIS: {candidate_name} ({candidate_id})")
 
-        try:
-            if not candidate_text or not candidate_text.strip():
-                print("❌ Candidate has empty 'about' field → score = 0")
-                scored_candidates.append({
-                    "id": candidate_id,
-                    "score": 0.0,
-                    "precision": 0.0,
-                    "recall": 0.0,
-                    "f1_score": 0.0,
-                    "domain_mismatch": False,
-                    "missing_skills": True
-                })
-                continue
+#         try:
+#             if not candidate_text or not candidate_text.strip():
+#                 print("❌ Candidate has empty 'about' field → score = 0")
+#                 scored_candidates.append({
+#                     "id": candidate_id,
+#                     "score": 0.0,
+#                     "precision": 0.0,
+#                     "recall": 0.0,
+#                     "f1_score": 0.0,
+#                     "domain_mismatch": False,
+#                     "missing_skills": True
+#                 })
+#                 continue
 
-            print("🔍 Running entity match with BERT...")
-            result = match_entities_with_bert(job_text, candidate_text)
-            print(f"✅ Match score: {result.get('score', 0.0)}")
+#             print("🔍 Running entity match with BERT...")
+#             result = match_entities_with_bert(job_text, candidate_text)
+#             print(f"✅ Match score: {result.get('score', 0.0)}")
 
-            scored_candidates.append({
-                "id": candidate_id,
-                "score": result.get("score", 0.0),
-                "precision": result.get("precision", 0.0),
-                "recall": result.get("recall", 0.0),
-                "f1_score": result.get("f1_score", 0.0),
-                "domain_mismatch": result.get("domain_mismatch", False),
-                "missing_skills": result.get("missing_skills", False)
-            })
+#             scored_candidates.append({
+#                 "id": candidate_id,
+#                 "score": result.get("score", 0.0),
+#                 "precision": result.get("precision", 0.0),
+#                 "recall": result.get("recall", 0.0),
+#                 "f1_score": result.get("f1_score", 0.0),
+#                 "domain_mismatch": result.get("domain_mismatch", False),
+#                 "missing_skills": result.get("missing_skills", False)
+#             })
 
-        except Exception as e:
-            print(f"❌ Error processing candidate {candidate_id}: {e}")
-            traceback.print_exc()
-            scored_candidates.append({
-                "id": candidate_id,
-                "score": 0.0,
-                "precision": 0.0,
-                "recall": 0.0,
-                "f1_score": 0.0,
-                "domain_mismatch": False,
-                "missing_skills": True
-            })
+#         except Exception as e:
+#             print(f"❌ Error processing candidate {candidate_id}: {e}")
+#             traceback.print_exc()
+#             scored_candidates.append({
+#                 "id": candidate_id,
+#                 "score": 0.0,
+#                 "precision": 0.0,
+#                 "recall": 0.0,
+#                 "f1_score": 0.0,
+#                 "domain_mismatch": False,
+#                 "missing_skills": True
+#             })
 
-    print("\n✅ All candidates processed. Running evaluation...\n")
-    evaluation = evaluate_matches(job, scored_candidates)
-    print("📊 Evaluation Results:", evaluation)
+#     print("\n✅ All candidates processed. Running evaluation...\n")
+#     evaluation = evaluate_matches(job, scored_candidates)
+#     print("📊 Evaluation Results:", evaluation)
 
-    return {
-        "candidates": scored_candidates,
-        "evaluation": evaluation
-    }
+#     return {
+#         "candidates": scored_candidates,
+#         "evaluation": evaluation
+#     }
 
 
 
