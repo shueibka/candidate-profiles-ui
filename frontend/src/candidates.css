@@ -49,9 +49,19 @@
 
 /* Card Flip Animation */
 .candidate-card {
+  position: relative;
+  overflow: hidden;
+  box-shadow: #45a049 0px 0px 5px 0px;
+  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
   width: 100%;
   height: 360px;
   perspective: 1000px;
+}
+
+.candidate-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-inner {
@@ -61,7 +71,6 @@
   transform-style: preserve-3d;
   transition: transform 0.6s;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .card-inner.flipped {
@@ -83,14 +92,48 @@
   flex-direction: column;
 }
 
+/* Front Face */
 .card-front {
   justify-content: space-between;
   overflow-y: auto;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  z-index: 2;
 }
 
+/* Back Face */
 .card-back {
   transform: rotateY(180deg);
   overflow-y: auto;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  z-index: 1;
+}
+
+/* Ensure correct stacking when flipped */
+.card-inner.flipped .card-back {
+  z-index: 2;
+}
+
+.card-inner.flipped .card-front {
+  z-index: 1;
+}
+
+/* Score Circle */
+.score-circle {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #2196f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2em;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 3; /* Always on top */
 }
 
 /* Card Content Styles */
@@ -127,30 +170,7 @@
   border-radius: 5px;
   cursor: pointer;
 }
-.candidate-card {
-  position: relative;
-  overflow: hidden;
-  box-shadow: #45a049 0px 0px 5px 0px;
-  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
-}
 
-.score-circle {
-  position: absolute;
-  right: 15px;
-  top: 15px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #2196f3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 1.2em;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 1; /* Ensure it stays above flipped content */
-}
 .card-actions button:first-child {
   background-color: #ffc107;
 }
@@ -170,6 +190,30 @@
 .evaluation-table td {
   padding: 6px;
   border-bottom: 1px solid #eee;
+}
+
+/* Validation Warning */
+.profile-warning {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #fff3cd;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  color: #856404;
+  z-index: 2;
+}
+
+/* Domain Tag */
+.domain-tag {
+  background: #e0e7ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: #1d4ed8;
 }
 
 /* Modal Styles */
@@ -276,60 +320,7 @@
   text-align: center;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .candidate-cards {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  }
-
-  .modal-content {
-    width: 95%;
-    padding: 15px;
-  }
-}
-/* candidates.css */
-/* ... (keep existing styles) ... */
-
-/* New Validation Styles */
-.profile-warning {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #fff3cd;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  color: #856404;
-  z-index: 2;
-}
-
-.domain-tag {
-  background: #e0e7ff;
-  padding: 2px 8px;
-  border-radius: 4px;
-  display: inline-block;
-  margin: 5px 0;
-  font-size: 0.9em;
-  color: #1d4ed8;
-}
-
-.validation-feedback {
-  margin: 10px 0;
-  padding: 10px;
-  border-radius: 6px;
-  background: #f8f9fa;
-}
-
-.error-text {
-  color: #dc3545;
-  margin: 5px 0;
-  font-size: 0.9em;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-/* Score Threshold Colors */
+/* Enhanced Card Styling */
 .low-score {
   background-color: #ff6b6b;
   animation: pulseWarning 1.5s infinite;
@@ -387,24 +378,17 @@
   }
 }
 
-/* Enhanced Card Styling */
-.candidate-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-front {
-  position: relative;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-}
-
-.card-back {
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-}
-
-/* Responsive Adjustments */
+/* Responsive Design */
 @media (max-width: 768px) {
+  .candidate-cards {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 15px;
+  }
+
   .profile-warning {
     font-size: 0.7em;
     padding: 3px 8px;
