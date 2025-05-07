@@ -1,74 +1,422 @@
-.candidate-container {
-  padding: 2rem;
+/* candidates.css */
+.candidates-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.add-button {
-  margin-bottom: 1rem;
-  background-color: #007bff;
-  color: white;
-  padding: 0.6rem 1rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
-}
-
-.candidate-card {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 10px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-}
-
-.card-actions {
-  margin-top: 1rem;
+/* Toolbar Styles */
+.toolbar {
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.toolbar input,
+.toolbar select {
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  flex: 1 1 200px;
+}
+
+.toolbar button {
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.toolbar button:hover {
+  background-color: #45a049;
+}
+
+/* Candidate Cards Grid */
+.candidate-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+/* Card Flip Animation */
+.candidate-card {
+  width: 100%;
+  height: 360px;
+  perspective: 1000px;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+/* Card Faces */
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  padding: 20px;
+  box-sizing: border-box;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-front {
+  justify-content: space-between;
+  overflow-y: auto;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  overflow-y: auto;
+}
+
+/* Card Content Styles */
+.candidate-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.candidate-card p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.candidate-card a {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* Card Actions */
+.card-actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
   gap: 10px;
 }
 
 .card-actions button {
-  padding: 0.4rem 0.8rem;
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 13px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
+.candidate-card {
+  position: relative;
+  overflow: hidden;
+  box-shadow: #45a049 0px 0px 5px 0px;
+  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
 
+.score-circle {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #2196f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2em;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1; /* Ensure it stays above flipped content */
+}
+.card-actions button:first-child {
+  background-color: #ffc107;
+}
+
+.card-actions button:last-child {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Evaluation Table */
+.evaluation-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+}
+
+.evaluation-table td {
+  padding: 6px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 10;
 }
 
 .modal-content {
   background: white;
-  padding: 2rem;
-  border-radius: 12px;
+  padding: 25px;
+  border-radius: 10px;
   width: 90%;
-  max-width: 500px;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
-.modal-content input {
-  display: block;
-  margin-bottom: 0.8rem;
-  width: 100%;
-  padding: 0.5rem;
+.modal-content input,
+.modal-content textarea {
+  padding: 8px;
+  font-size: 14px;
   border-radius: 5px;
   border: 1px solid #ccc;
+  resize: vertical;
 }
 
 .modal-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 1rem;
+  margin-top: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 8px;
+  margin: 0 5px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.modal-actions button:first-child {
+  background-color: #4caf50;
+  color: white;
+}
+
+.modal-actions button:last-child {
+  background-color: #ccc;
+}
+
+/* Job List Styles */
+.modal-content ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.modal-content li {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  white-space: normal;
+  word-break: break-word;
+  font-size: 14px;
+}
+
+.modal-content li:hover {
+  background-color: #f5f5f5;
+}
+
+/* Status Indicators */
+.loading-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  text-align: center;
+}
+
+.error-message {
+  color: #dc3545;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #dc3545;
+  border-radius: 4px;
+  background: #f8d7da;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .candidate-cards {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 15px;
+  }
+}
+/* candidates.css */
+/* ... (keep existing styles) ... */
+
+/* New Validation Styles */
+.profile-warning {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #fff3cd;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  color: #856404;
+  z-index: 2;
+}
+
+.domain-tag {
+  background: #e0e7ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: #1d4ed8;
+}
+
+.validation-feedback {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 6px;
+  background: #f8f9fa;
+}
+
+.error-text {
+  color: #dc3545;
+  margin: 5px 0;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Score Threshold Colors */
+.low-score {
+  background-color: #ff6b6b;
+  animation: pulseWarning 1.5s infinite;
+}
+
+.medium-score {
+  background-color: #ffd93d;
+  animation: pulseMedium 2s infinite;
+}
+
+.high-score {
+  background-color: #51cf66;
+  animation: pulseSuccess 1s infinite;
+}
+
+@keyframes pulseWarning {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pulseMedium {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 217, 61, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 217, 61, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 217, 61, 0);
+  }
+}
+
+@keyframes pulseSuccess {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(3deg);
+  }
+  50% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* Enhanced Card Styling */
+.candidate-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-front {
+  position: relative;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.card-back {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .profile-warning {
+    font-size: 0.7em;
+    padding: 3px 8px;
+  }
+
+  .domain-tag {
+    font-size: 0.8em;
+  }
+
+  .score-circle {
+    width: 50px;
+    height: 50px;
+    font-size: 1em;
+  }
 }

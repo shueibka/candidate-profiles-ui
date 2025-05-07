@@ -1,0 +1,11 @@
+Flask
+Flask-Cors
+SQLAlchemy
+spacy
+sentence-transformers
+scikit-learn
+transformers
+numpy
+pydantic
+langdetect
+concurrent-log-handler
