@@ -1,75 +1,69 @@
-# matching/recommendations.py
+# recommendations.py
 
 import traceback
-from matching.matcher_pipeline import match_entities_with_bert
+from matching.matcher_pipeline import match_entities_with_bert, clean_text
 from matching.evaluation import evaluate_matches
+
+# recommendations.py
 
 def recommend_candidates_for_job(job, candidates):
     job_id = job.get("id", "unknown")
-
-    print("\n" + "=" * 40)
-    print(f"🧑💼 JOB DESCRIPTION ANALYSIS for Job ID: {job_id}")
-    
-    # Log job structure
-    match_entities_with_bert(job, {})
+    print(f"\n🧑💼 Processing job: {job['title']} ({job_id})")
 
     scored_candidates = []
-
+    
     for candidate in candidates:
-        candidate_id   = candidate.get("record_id") or candidate.get("id", "unknown")
-        candidate_name = candidate.get("name", "Unnamed")
-
-        print("\n" + "=" * 40)
-        print(f"👤 CANDIDATE PROFILE ANALYSIS: {candidate_name} ({candidate_id})")
-
         try:
-            # Coalesce None to "" and strip whitespace
-            about_text       = (candidate.get("about") or "").strip()
-            experiences_text = (candidate.get("experiences") or "").strip()
-
-            # Skip completely empty profiles
-            if not about_text and not experiences_text:
-                print("❌ Candidate has no usable profile text → score = 0")
-                scored_candidates.append({
-                    "id": candidate_id,
-                    "score":     0.0,
-                    "precision": 0.0,
-                    "recall":    0.0,
-                    "f1_score":  0.0
-                })
-                continue
-
-            print("🔍 Running entity match with BERT...")
+            candidate_id = candidate.get("record_id", "unknown")
             result = match_entities_with_bert(
                 job,
-                {"about": about_text, "experiences": experiences_text}
+                {
+                    "about": clean_text(candidate.get("about", "")),
+                    "experiences": clean_text(candidate.get("experiences", "")),
+                    "city": clean_text(candidate.get("city", "")),
+                    "degrees": clean_text(candidate.get("degrees", "")),
+                    "certifications": clean_text(candidate.get("certifications", "")),
+                    "languages": clean_text(candidate.get("languages", "")),
+                    "courses": clean_text(candidate.get("courses", "")),
+                    "total_experience": candidate.get("total_experience_years", 0)
+                }
             )
-            print(f"✅ Match score: {result.get('score', 0.0)}")
-
+            
             scored_candidates.append({
-                "id":        candidate_id,
-                "score":     result.get("score", 0.0),
-                "precision": result.get("precision", 0.0),
-                "recall":    result.get("recall", 0.0),
-                "f1_score":  result.get("f1_score", 0.0)
+                "id": candidate_id,
+                "score": result["score"],
+                "precision": result["precision"],
+                "recall": result["recall"],
+                "f1_score": result["f1_score"],
+                "details": {
+                    # Corrected keys below
+                    "roles": list(result["details"]["matched_roles"]),
+                    "locations": list(result["details"]["matched_locations"]),
+                    "tech_skills": list(result["details"]["matched_tech"]),
+                    "matched_degrees": list(result["details"].get("degrees", [])),
+                    "matched_certifications": list(result["details"].get("certifications", [])),
+                    "job_experience": float(result["details"]["experience_ratio"].split("/")[1]),
+                    "candidate_experience": float(result["details"]["experience_ratio"].split("/")[0])
+                }
             })
+
 
         except Exception as e:
-            print(f"❌ Error processing candidate {candidate_id}: {e}")
+            print(f"❌ Error processing {candidate_id}: {str(e)}")
             traceback.print_exc()
             scored_candidates.append({
-                "id":        candidate_id,
-                "score":     0.0,
-                "precision": 0.0,
-                "recall":    0.0,
-                "f1_score":  0.0
+                "id": candidate_id,
+                "score": 0,
+                "precision": 0,
+                "recall": 0,
+                "f1_score": 0,
+                "error": str(e)
             })
 
-    print("\n✅ All candidates processed. Running evaluation...\n")
-    evaluation = evaluate_matches(job, scored_candidates)
-    print("📊 Evaluation Results:", evaluation)
-
+    # Sort candidates by score
+    sorted_candidates = sorted(scored_candidates, key=lambda x: x["score"], reverse=True)
+    
     return {
-        "candidates": scored_candidates,
-        "evaluation": evaluation
+        "candidates": sorted_candidates,
+        "evaluation": evaluate_matches(job, sorted_candidates)
     }

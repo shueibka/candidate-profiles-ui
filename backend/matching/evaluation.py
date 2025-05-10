@@ -52,8 +52,8 @@ def evaluate_recommendations(job_id):
             WHERE job_id = :job_id
         """), {"job_id": job_id}).scalars().all()
 
-        predicted_candidate_ids = [row.candidate_id for row in predictions]
-        predicted_set = set(predicted_candidate_ids)
+        # Calculate precision/recall metrics
+        predicted_set = {row.candidate_id for row in predictions}
         actual_set = set(actual_hires)
         
         tp = len(predicted_set & actual_set)
@@ -64,15 +64,13 @@ def evaluate_recommendations(job_id):
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0
         f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
-        domain_mismatches = sum(row.domain_mismatch for row in predictions)
-        skill_gaps = sum(row.missing_skills for row in predictions)
-
         return {
             "precision": precision,
             "recall": recall,
             "f1_score": f1,
-            "domain_mismatches": domain_mismatches,
-            "skill_gaps": skill_gaps
+            "role_match_rate": len(predicted_roles & actual_roles) / len(actual_roles) if actual_roles else 0,
+            "location_match_rate": len(predicted_locations & actual_locations) / len(actual_locations) if actual_locations else 0,
+            "experience_accuracy": exp_accuracy
         }
     finally:
         session.close()
